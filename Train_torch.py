@@ -15,7 +15,7 @@ torch.manual_seed(1)
 MOVE_RANGE = 3
 EPISODE_LEN = 5
 MAX_EPISODE = 100000
-GAMMA = 0.95 # discount factor
+GAMMA = 0.95 
 N_ACTIONS = 9
 BATCH_SIZE = 22
 DIS_LR = 3e-4
