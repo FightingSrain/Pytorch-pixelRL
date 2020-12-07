@@ -33,10 +33,6 @@ IMAGE_DIR_PATH = ".//"
 def main():
     model = PPO(N_ACTIONS).to(device)
     model.load_state_dict(torch.load("./torch_initweight/sig25_gray.pth"))
-    dis_reward = Discriminator().to(device)
-    target_netD = Discriminator().to(device)
-    hard_update(target_netD, dis_reward)
-    optimizerD = optim.RMSprop(dis_reward.parameters(), lr=DIS_LR)  # 0.5，0.999
     optimizer = optim.Adam(model.parameters(), lr=LR)
     i_index = 0
 
@@ -54,7 +50,6 @@ def main():
     for n_epi in tqdm(range(0, 10000), ncols=70, initial=0):
         r = indices[i_index: i_index + BATCH_SIZE]
         raw_x = mini_batch_loader.load_training_data(r)
-        # generate noise
         l = raw_x
         raw_n = np.random.normal(0, sigma, (BATCH_SIZE, 1, 63, 63)).astype(l.dtype) / 255
         current_state.reset(raw_x, raw_n)
