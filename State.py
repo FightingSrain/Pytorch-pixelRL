@@ -32,27 +32,22 @@ class State():
         box = np.zeros(self.image.shape, self.image.dtype)
 
         b, c, h, w = self.image.shape
-        for i in range(0, b):  # 训练为batch_size=64
+        for i in range(0, b): 
             if np.sum(act[i] == self.move_range) > 0:
-                # 去噪 高斯滤波
                 gaussian[i] = np.expand_dims(cv2.GaussianBlur(self.image[i].squeeze().astype(np.float32), ksize=(5, 5),
                                                               sigmaX=0.5), 0)
             if np.sum(act[i] == self.move_range + 1) > 0:
-                # 去噪 双边滤波
                 bilateral[i] = np.expand_dims(cv2.bilateralFilter(self.image[i].squeeze().astype(np.float32), d=5,
                                                                   sigmaColor=0.1, sigmaSpace=5), 0)
             if np.sum(act[i] == self.move_range + 2) > 0:
-                # 去噪 中值滤波
                 median[i] = np.expand_dims(cv2.medianBlur(self.image[i].squeeze().astype(np.float32), ksize=5), 0)  # 5
 
             if np.sum(act[i] == self.move_range + 3) > 0:
                 gaussian2[i] = np.expand_dims(cv2.GaussianBlur(self.image[i].squeeze().astype(np.float32), ksize=(5, 5),
                                                                sigmaX=1.5), 0)
-
             if np.sum(act[i] == self.move_range + 4) > 0:
                 bilateral2[i] = np.expand_dims(cv2.bilateralFilter(self.image[i].squeeze().astype(np.float32), d=5,
                                                                    sigmaColor=1.0, sigmaSpace=5), 0)
-
             if np.sum(act[i] == self.move_range + 5) > 0:  # 7
                 box[i] = np.expand_dims(
                     cv2.boxFilter(self.image[i].squeeze().astype(np.float32), ddepth=-1, ksize=(5, 5)), 0)
