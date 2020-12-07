@@ -85,16 +85,15 @@ class PixelWiseA3C_InnerState():
 
     def update(self, statevar):
         assert self.t_start < self.t
-        # 如果为最开始，那么状态为none，奖励为0
+   
         if statevar is None:
             R = torch.zeros(22, 1, 63, 63).cuda()
         else:
-            # 否则用价值来计算累计奖励和
             _, vout, _ = self.model.pi_and_v(statevar)
             R = vout.data
         pi_loss = 0
         v_loss = 0
-        # 倒序遍历时间步
+
         for i in reversed(range(self.t_start, self.t)):
             R *= self.gamma
             R += self.past_rewards[i]
@@ -149,20 +148,18 @@ class PixelWiseA3C_InnerState():
             self.update(statevar)
 
         self.past_states[self.t] = statevar
-        # label
-        # with torch.no_grad():
         pout, vout, inner_state = self.model.pi_and_v(statevar)
         p_trans = pout.permute([0,2,3,1])
         dist = Categorical(p_trans)
-        action = dist.sample().data # 动作
-        log_p = torch.log(pout) # 对数概率
+        action = dist.sample().data 
+        log_p = torch.log(pout)
         action_prob = pout.gather(1, action.unsqueeze(1))
             # with torch.no_grad():
         entropy = torch.stack([- torch.sum(log_p * pout, dim=1)]).permute([1,0,2,3])
 
-        self.past_action_log_prob[self.t] = torch.log(action_prob).cuda() # 对数概率
+        self.past_action_log_prob[self.t] = torch.log(action_prob).cuda()
         # F.stack([- F.sum(self.all_prob * self.all_log_prob, axis=1)], axis=1)
-        self.past_action_entropy[self.t] = entropy.cuda()# 动作熵
+        self.past_action_entropy[self.t] = entropy.cuda()
         self.past_values[self.t] = vout
         self.t += 1
 
@@ -174,7 +171,6 @@ class PixelWiseA3C_InnerState():
         if done:
             self.update(None)
         else:
-            #statevar = self.batch_states([state], np, self.phi)
             statevar = state
             self.update(statevar)
 
