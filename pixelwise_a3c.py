@@ -144,9 +144,7 @@ class PixelWiseA3C_InnerState():
     def act_and_train(self, state, reward):
         statevar = torch.Tensor(state).cuda()
         self.past_rewards[self.t - 1] = torch.Tensor(reward).cuda()
-##########################
-        # t是不断增长得，其中self.t_max = 5
-        # 如果够5步或定义得步数后执行更新
+
         if self.t - self.t_start == self.t_max:
             self.update(statevar)
 
@@ -179,57 +177,7 @@ class PixelWiseA3C_InnerState():
             #statevar = self.batch_states([state], np, self.phi)
             statevar = state
             self.update(statevar)
-        # torch.cuda.empty_cache()
 
-    # WGAN Loss
-    def cal_gradient_penalty(self, netD, real_data, fake_data, batch_size):
-        alpha = torch.rand(batch_size, 1)
-        # int(real_data.nelement() / batch_size) real_data 中tensor元素得个数
-        # print(real_data.size()) # 80, 6, 63, 63
-        # print(real_data.nelement()) # 1905120=80*6*63*63
-        # print(int(real_data.nelement() / batch_size)) # 119070=63*63* 6*5
-        # print(batch_size) # 16
-        # print("********")
-        alpha = alpha.expand(batch_size, int(real_data.nelement() / batch_size)).contiguous()
-        # print(alpha.size())
-        # print("$$$$$$$$")
-        alpha = alpha.view(batch_size, 6, 63, 63)  # (16, 1, 63, 63)
-        alpha = alpha.to(device)
 
-        fake_data = fake_data.view(batch_size, 6, 63, 63)  # (16, 1, 63, 63)
-        interpolates = Variable(alpha * real_data.data + ((1 - alpha) * fake_data.data), requires_grad=True)
-        disc_interpolates, _ = netD(interpolates)
-        gradients = autograd.grad(disc_interpolates, interpolates,
-                                      grad_outputs=torch.ones(disc_interpolates.size()).to(device),
-                                      create_graph=True, retain_graph=True)[0]
-        gradients = gradients.view(gradients.size(0), -1)
-        gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean() * self.lambdas
-        return gradient_penalty
 
-    def update_dis(self, fake_data, real_data, Rlabel):
-        # 下一状态状态
-        fake_data = fake_data.detach()
-        # 无噪声图片
-        real_data = real_data.detach()
-
-        fake = torch.cat([real_data, fake_data], 1)
-        real = torch.cat([real_data, real_data], 1)
-
-        D_real, rot_real = self.dis_reward(real)
-        D_fake, rot_fake = self.dis_reward(fake)
-
-        rot_labels = torch.LongTensor(Rlabel.to(torch.int64).unsqueeze(1))
-        Rot_labels = torch.zeros(self.t_max * self.batch_size, 4).scatter_(1, rot_labels, 1).cuda()
-        d_real_class_loss = torch.sum(F.binary_cross_entropy_with_logits(
-                input=rot_real,
-                target=Rot_labels))
-        gradient_penalty = self.cal_gradient_penalty(self.dis_reward, real, fake, real.size(0))
-        self.optimizerD.zero_grad()
-        D_cost = D_fake.mean() - D_real.mean() + gradient_penalty + d_real_class_loss
-        print("Cost:", D_cost)
-        print("classLoss:", d_real_class_loss)
-        D_cost.backward()
-        # nn.utils.clip_grad_norm_(dis_reward.parameters(), 50)
-        self.optimizerD.step()
-        soft_update(self.target_netD, self.dis_reward, 0.001)
 
