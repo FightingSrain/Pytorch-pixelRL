@@ -14,7 +14,7 @@
 
 # Citation
 
-Please quote the paper.
+Please quote the original paper.
 
 ```
 @inproceedings{aaai_furuta_2019,
