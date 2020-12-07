@@ -5,7 +5,6 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 from torch import autograd
 from torch.distributions import Categorical
-from RL_model.reward_dis import *
 import torch
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 torch.manual_seed(1)
@@ -85,7 +84,6 @@ class PixelWiseA3C_InnerState():
 
     def update(self, statevar):
         assert self.t_start < self.t
-   
         if statevar is None:
             R = torch.zeros(22, 1, 63, 63).cuda()
         else:
@@ -103,9 +101,7 @@ class PixelWiseA3C_InnerState():
             entropy = self.past_action_entropy[i]
 
             pi_loss -= log_prob * advantage.data
-            # Entropy is maximized
             pi_loss -= self.beta * entropy
-            # Accumulate gradients of value function
             v_loss += (v - R) ** 2 / 2
 
         if self.pi_loss_coef != 1.0:
@@ -118,18 +114,12 @@ class PixelWiseA3C_InnerState():
         print("==========")
         total_loss = (pi_loss + v_loss).mean()
 
-        print("loss:", total_loss) # 5
-        # self.update_dis(s_next[:, 0:3, :, :].cuda(), real.cuda(), rotlabel)
+        print("loss:", total_loss) 
 
         self.optimizer.zero_grad()
         total_loss.backward()
         self.optimizer.step()
-
-        # self.shared_model.zero_grad()
         self.update_grad(self.shared_model, self.model)
-
-
-
         self.sync_parameters()
 
         self.past_action_log_prob = {}
@@ -154,7 +144,6 @@ class PixelWiseA3C_InnerState():
         action = dist.sample().data 
         log_p = torch.log(pout)
         action_prob = pout.gather(1, action.unsqueeze(1))
-            # with torch.no_grad():
         entropy = torch.stack([- torch.sum(log_p * pout, dim=1)]).permute([1,0,2,3])
 
         self.past_action_log_prob[self.t] = torch.log(action_prob).cuda()
