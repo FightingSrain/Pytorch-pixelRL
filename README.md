@@ -1,2 +1,2 @@
 ＃Pytorch-pixelRL
-# Pytorch reproduction of pixelRL
+`Pytorch reproduction of pixelRL`
