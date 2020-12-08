@@ -3,10 +3,10 @@ import torch
 import numpy as np
 import cv2
 from tqdm import tqdm
-import RL_model.State as State
-from RL_model.pixelwise_a3c import *
-from RL_model.FCN import *
-from RL_model.mini_batch_loader import MiniBatchLoader
+import State as State
+from pixelwise_a3c import *
+from FCN import *
+from mini_batch_loader import MiniBatchLoader
 import matplotlib.pyplot as plt
 import torch.optim as optim
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
