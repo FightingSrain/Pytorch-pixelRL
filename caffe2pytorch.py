@@ -1,5 +1,5 @@
 from chainer.links.caffe import CaffeFunction
-from RL_model.Attention_FCN import PPO
+from FCN import PPO
 import torch
 import numpy as np
 net = CaffeFunction('./initial_weight/zhang_cvpr17_denoise_50_gray.caffemodel')
