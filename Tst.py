@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import cv2
 from FCN import PPO
-from Step import State
+import State as State
 import matplotlib.pyplot as plt
 from torch.distributions import Categorical
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
