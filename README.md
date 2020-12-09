@@ -9,6 +9,17 @@
 - pytorch 0.4.1+
 - python 3.5+
 
+
+The PixelRL Denoiser 
+----------
+* Grayscale image denoising
+
+  <img src="action_map/Figure_1.png" width="800px"/> 
+  <img src="action_map/Figure_2.png" width="800px"/> 
+  <img src="action_map/Figure_3.png" width="800px"/> 
+  <img src="action_map/Figure_4.png" width="800px"/> 
+  <img src="action_map/Figure_5.png" width="800px"/> 
+
 `Update not completed.`
 
 
