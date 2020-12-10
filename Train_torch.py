@@ -20,13 +20,12 @@ N_ACTIONS = 9
 BATCH_SIZE = 22
 DIS_LR = 3e-4
 LR = 1e-3
-LAMBDA = 10
 img_size = 63
 sigma = 25
 # TRAINING_DATA_PATH = "./train.txt"
 # TESTING_DATA_PATH = "./train.txt"
-TRAINING_DATA_PATH = "./BSD432.txt"
-TESTING_DATA_PATH = "./BSD432.txt"
+TRAINING_DATA_PATH = "./BSD68.txt"
+TESTING_DATA_PATH = "./BSD68.txt"
 IMAGE_DIR_PATH = ".//"
 
 def main():
@@ -42,7 +41,7 @@ def main():
         img_size)
 
     current_state = State.State((BATCH_SIZE, 1, 63, 63), MOVE_RANGE)
-    agent = PixelWiseA3C_InnerState(model, optimizer, optimizerD, LAMBDA, dis_reward, target_netD, BATCH_SIZE, EPISODE_LEN, GAMMA)
+    agent = PixelWiseA3C_InnerState(model, optimizer, BATCH_SIZE, EPISODE_LEN, GAMMA)
 
     train_data_size = MiniBatchLoader.count_paths(TRAINING_DATA_PATH)
     indices = np.random.permutation(train_data_size)
