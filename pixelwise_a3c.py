@@ -11,7 +11,7 @@ torch.manual_seed(1)
 
 class PixelWiseA3C_InnerState():
 
-    def __init__(self, model, optimizer, optimizerD, LAMBDA, G, D, batch_size, t_max, gamma, beta=1e-2,
+    def __init__(self, model, optimizer, batch_size, t_max, gamma, beta=1e-2,
                  phi=lambda x: x,
                  pi_loss_coef=1.0, v_loss_coef=0.5,
                  average_reward_tau=1e-2,
@@ -23,10 +23,6 @@ class PixelWiseA3C_InnerState():
         self.model = copy.deepcopy(self.shared_model)
 
         self.optimizer = optimizer
-        self.optimizerD = optimizerD
-        self.lambdas = LAMBDA
-        self.dis_reward = G
-        self.target_netD = D
         self.batch_size = batch_size
 
         self.t_max = t_max
