@@ -20,7 +20,7 @@ The PixelRL Denoiser
   <img src="action_map/Figure_4.png" width="800px"/> 
   <img src="action_map/Figure_5.png" width="800px"/> 
 
-`Update not completed.`
+`Just run Train_torch.py.`
 
 
 # Citation
