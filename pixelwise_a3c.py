@@ -59,7 +59,7 @@ class PixelWiseA3C_InnerState():
         for m1, m2 in zip(self.model.modules(), self.shared_model.modules()):
             m1._buffers = m2._buffers.copy()
         for target_param, param in zip(self.model.parameters(), self.shared_model.parameters()):
-            target_param.data.copy_(param.data)
+            target_param.detach().copy_(param.detach())
     """
     异步更新梯度
     """
@@ -84,7 +84,7 @@ class PixelWiseA3C_InnerState():
             R = torch.zeros(22, 1, 63, 63).cuda()
         else:
             _, vout, _ = self.model.pi_and_v(statevar)
-            R = vout.data
+            R = vout.detach()
         pi_loss = 0
         v_loss = 0
 
@@ -96,7 +96,7 @@ class PixelWiseA3C_InnerState():
             log_prob = self.past_action_log_prob[i]
             entropy = self.past_action_entropy[i]
 
-            pi_loss -= log_prob * advantage.data
+            pi_loss -= log_prob * advantage.detach()
             pi_loss -= self.beta * entropy
             v_loss += (v - R) ** 2 / 2
 
@@ -137,7 +137,7 @@ class PixelWiseA3C_InnerState():
         pout, vout, inner_state = self.model.pi_and_v(statevar)
         p_trans = pout.permute([0,2,3,1])
         dist = Categorical(p_trans)
-        action = dist.sample().data 
+        action = dist.sample().detach() 
         log_p = torch.log(pout)
         action_prob = pout.gather(1, action.unsqueeze(1))
         entropy = torch.stack([- torch.sum(log_p * pout, dim=1)]).permute([1,0,2,3])
@@ -148,7 +148,7 @@ class PixelWiseA3C_InnerState():
         self.past_values[self.t] = vout
         self.t += 1
 
-        return action.squeeze(1).data.cpu(), inner_state.data.cpu(), action_prob.squeeze(1).data.cpu()
+        return action.squeeze(1).detach().cpu(), inner_state.detach().cpu(), action_prob.squeeze(1).detach().cpu()
 
 
     def stop_episode_and_train(self, state, reward, done=False):
