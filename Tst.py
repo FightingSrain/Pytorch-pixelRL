@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from torch.distributions import Categorical
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-model = PPO(9, 1).to(device)
+model = PPO(9).to(device)
 model.load_state_dict(torch.load('./torch_pixel_model/pixel_sig25_gray.pth'))
 simga = 25
 def tst(model):
@@ -54,10 +54,10 @@ def select_action(state, test=False):
     if test:
         _, action = torch.max(pout, dim=1)
     else:
-        action = dist.sample().data  # 动作
+        action = dist.sample().detach()  # 动作
 
     action_prob = pout.gather(1, action.unsqueeze(1))
-    return action.unsqueeze(1).data.cpu().numpy(), action_prob.data.cpu().numpy(), ht_.data.cpu().numpy()
+    return action.unsqueeze(1).detach().cpu().numpy(), action_prob.detach().cpu().numpy(), ht_.detach().cpu().numpy()
 def paint_amap(acmap):
     image = np.asanyarray(acmap.squeeze(), dtype=np.uint8)
     plt.imshow(image,  vmin=1, vmax=9)
