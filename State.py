@@ -21,7 +21,7 @@ class State():
         act = act.numpy()
         neutral = (self.move_range - 1)/2
         move = act.astype(np.float32)
-        move = (move - neutral)/255
+        move = (move - neutral)/255.
         moved_image = self.image + move[:,np.newaxis,:,:]
 
         gaussian = np.zeros(self.image.shape, self.image.dtype)
@@ -51,6 +51,7 @@ class State():
             if np.sum(act[i] == self.move_range + 5) > 0:  # 7
                 box[i] = np.expand_dims(
                     cv2.boxFilter(self.image[i].squeeze().astype(np.float32), ddepth=-1, ksize=(5, 5)), 0)
+        
         self.image = moved_image
         self.image = np.where(act[:,np.newaxis,:,:]==self.move_range, gaussian, self.image)
         self.image = np.where(act[:,np.newaxis,:,:]==self.move_range+1, bilateral, self.image)
@@ -60,5 +61,5 @@ class State():
         self.image = np.where(act[:,np.newaxis,:,:]==self.move_range+5, box, self.image)
 
         self.image = np.clip(self.image, a_min=0., a_max=1.)
-        self.tensor[:,:self.image.shape[1],:,:] = self.image
-        self.tensor[:,-64:,:,:] = inner_state
+        self.tensor[:, :self.image.shape[1], :, :] = self.image
+        self.tensor[:, -64:, :, :] = inner_state
