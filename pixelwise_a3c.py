@@ -81,7 +81,7 @@ class PixelWiseA3C_InnerState():
     def update(self, statevar):
         assert self.t_start < self.t
         if statevar is None:
-            R = torch.zeros(22, 1, 63, 63).cuda()
+            R = torch.zeros(self.batch_size, 1, 63, 63).cuda()
         else:
             _, vout, _ = self.model.pi_and_v(statevar)
             R = vout.detach()
@@ -98,13 +98,14 @@ class PixelWiseA3C_InnerState():
 
             pi_loss -= log_prob * advantage.detach()
             pi_loss -= self.beta * entropy
-            v_loss += (v - R) ** 2 / 2
+            v_loss += (v - R) ** 2 / 2.
 
         if self.pi_loss_coef != 1.0:
             pi_loss *= self.pi_loss_coef
 
         if self.v_loss_coef != 1.0:
             v_loss *= self.v_loss_coef
+
         print(pi_loss.mean())
         print(v_loss.mean())
         print("==========")
@@ -135,20 +136,22 @@ class PixelWiseA3C_InnerState():
 
         self.past_states[self.t] = statevar
         pout, vout, inner_state = self.model.pi_and_v(statevar)
-        p_trans = pout.permute([0,2,3,1])
-        dist = Categorical(p_trans)
-        action = dist.sample().detach() 
-        log_p = torch.log(pout)
-        action_prob = pout.gather(1, action.unsqueeze(1))
-        entropy = torch.stack([- torch.sum(log_p * pout, dim=1)]).permute([1,0,2,3])
+        n, num_actions, h, w = pout.shape
 
-        self.past_action_log_prob[self.t] = torch.log(action_prob).cuda()
-        # F.stack([- F.sum(self.all_prob * self.all_log_prob, axis=1)], axis=1)
+        p_trans = pout.permute([0, 2, 3, 1]).contiguous().view(-1, pout.shape[1])
+        dist = Categorical(p_trans)
+        action = dist.sample()
+        log_p = torch.log(torch.clamp(p_trans, min=1e-9, max=1-1e-9))
+        log_action_prob = torch.gather(log_p, 1, Variable(action.unsqueeze(-1))).view(n, 1, h, w)
+        entropy = -torch.sum(p_trans * log_p, dim=-1).view(n, 1, h, w)
+
+
+        self.past_action_log_prob[self.t] = log_action_prob.cuda()
         self.past_action_entropy[self.t] = entropy.cuda()
         self.past_values[self.t] = vout
         self.t += 1
 
-        return action.squeeze(1).detach().cpu(), inner_state.detach().cpu(), action_prob.squeeze(1).detach().cpu()
+        return action.squeeze(1).detach().cpu(), inner_state.detach().cpu(), torch.exp(log_action_prob).squeeze(1).detach().cpu()
 
 
     def stop_episode_and_train(self, state, reward, done=False):

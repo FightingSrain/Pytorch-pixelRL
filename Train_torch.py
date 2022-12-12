@@ -20,7 +20,7 @@ GAMMA = 0.95
 N_ACTIONS = 9
 BATCH_SIZE = 22
 DIS_LR = 3e-4
-LR = 1e-3
+LR = 1e-4
 img_size = 63
 sigma = 25
 
@@ -74,7 +74,7 @@ def main():
                 cv2.imshow("temp", image)
                 cv2.waitKey(1)
             
-                previous_image = np.clip(current_state.image.copy(), a_min=0., a_max=1.)
+            previous_image = np.clip(current_state.image.copy(), a_min=0., a_max=1.)
             action, inner_state, action_prob = agent.act_and_train(current_state.tensor, reward)
 
             if n_epi % 10 == 0:
@@ -98,6 +98,7 @@ def main():
             i_index = train_data_size - BATCH_SIZE
 
         print("train total reward {a}".format(a=sum_reward * 255))
+
 def paint_amap(acmap):
     image = np.asanyarray(acmap.squeeze(), dtype=np.uint8)
     # print(image)

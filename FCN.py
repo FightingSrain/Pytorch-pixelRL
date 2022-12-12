@@ -63,6 +63,7 @@ class PPO(nn.Module):
         elif classname.find('Linear') != -1:
             m.weight.data.normal_(0, 0.01)
             m.bias.data = torch.ones(m.bias.data.size())
+    
     def pi_and_v(self, x):
         conv = self.conv(x[:,0:1,:,:])
         p = self.diconv1_p(conv)
